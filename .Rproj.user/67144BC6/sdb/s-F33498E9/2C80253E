@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(wrassp) \n#library(help = wrassp)\nlibrary(tuneR)\n#Read the .au file \n\n# read.AsspDataObj ------------------------------------------------------------------------\n\ntemp = list.files(pattern =\"*.au\")\n\ncreate_empty_table <- function(num_rows, num_cols) {\n  frame <- data.frame(matrix(NA, nrow = num_rows, ncol = num_cols))\n  return(frame)\n}\n\n\nfor (i in 1:length(temp)) {\n  x = read.AsspDataObj(temp[i])\n  y = Wave(as.numeric(x$audio), samp.rate = rate.AsspDataObj(x), bit = 16)\n  assign(temp[i], y)\n  }\n\n# Feature extraction ------------------------------------------------------\n\nsuppressPackageStartupMessages( require(signal, quietly = TRUE) )\n\n# setup of short time fourier transform -----------------------------------\n\nfs = \n",
+    "created" : 1498409927205.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "558275766",
+    "id" : "2C80253E",
+    "lastKnownWriteTime" : 1498434572,
+    "last_content_update" : 1498434572022,
+    "path" : "C:/Users/Giacomo/Google Drive/Data Science/SL/HW2/import.R",
+    "project_path" : "import.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
