@@ -25,4 +25,4 @@ suppressPackageStartupMessages( require(signal, quietly = TRUE) )
 
 # setup of short time fourier transform -----------------------------------
 
-fs = 
+f1 = f1.au@left 
