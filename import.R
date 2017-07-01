@@ -133,3 +133,44 @@ label = read.table('Labels.txt')
 data=as.data.frame(mat)
 data=cbind(label,data)
 write.csv(data, file = "database.csv")
+
+
+# spitting rtain test -----------------------------------------------------
+dim(data) 
+
+#Sample Indexes
+indexes = sample(1:nrow(data), size=0.2*nrow(data))
+
+# Split data
+test = data[indexes,]
+dim(test)  # 6 11
+train = data[-indexes,]
+dim(train) # 26 11
+
+
+
+
+# MODEL SVM ---------------------------------------------------------------
+
+
+
+library(e1071)
+svm_model <- svm(x~ ., data=trainset, method=”C-classification”, kernel=”linear”)
+svm_model
+#training set predictions
+pred_train <-predict(svm_model,trainset)
+mean(pred_train==trainset$Species)
+#test set predictions
+pred_test <-predict(svm_model,testset)
+mean(pred_test==testset$Species)
+
+
+
+# model svm CARET ---------------------------------------------------------
+
+library(caret)
+ctrl <- trainControl(method = "repeatedcv", repeats = 5)
+set.seed(1500)
+mod <- train(x.~., data=data, method = "svmLinear", trControl = ctrl)
+
+
