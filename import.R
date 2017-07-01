@@ -47,3 +47,34 @@ names(sp)
 #sp
 dim(sp$S)
 
+# freq band selection -----------------------------------------------------
+
+nb= 2^3
+lowB=100
+eps <- .Machine$double.eps
+
+# numb sec analyzez window ------------------------------------------------
+
+ntm <- ncol(sp$S)
+corrtime <- 15
+
+
+# energy ------------------------------------------------------------------
+
+# Energy of bands 
+fco <- round( c(0, lowB*(fs/2/lowB)^((0:(nb-1))/(nb-1)))/fs*nfft ) 
+energy <- matrix(0, nb, ntm) 
+for (tm in 1:ntm){ 
+  for (i in 1:nb){ 
+    lower_bound <- 1 + fco[i] 
+    upper_bound <- min( c( 1 + fco[i + 1], nrow(sp$S) ) ) 
+    energy[i, tm] <- sum( abs(sp$S[ lower_bound:upper_bound, tm ])^2 )
+  } 
+}
+energy[energy < eps] <- eps 
+energy = 10*log10(energy)
+energy[,1:3]
+##
+dim(energy)
+feat.vec <- c(energy)
+head(feat.vec)
