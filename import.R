@@ -19,10 +19,31 @@ for (i in 1:length(temp)) {
   assign(temp[i], y)
   }
 
+
+# what to do with every au ------------------------------------------------
+
+
+str(f1.au)
+f1 = f1.au@left 
+f1.dwn = downsample(f1.au,samp.rate = 11025)
+
+
 # Feature extraction ------------------------------------------------------
 
 suppressPackageStartupMessages( require(signal, quietly = TRUE) )
 
 # setup of short time fourier transform -----------------------------------
+fs = f1.dwn@samp.rate
+winsize <- 2048
+hopsize <- 512
+nfft <- 2048
+noverlap <- winsize - hopsize
+#go
+sp <-  specgram(x=f1.dwn@left,n=nfft,Fs=fs, window = winsize,overlap = noverlap)
 
-f1 = f1.au@left 
+#take a look
+class(sp)
+names(sp)
+#sp
+dim(sp$S)
+
