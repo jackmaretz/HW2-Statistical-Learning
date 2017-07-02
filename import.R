@@ -226,15 +226,15 @@ cv <-
     nfold = 3,
     verbose = 1
   )
-)[3] / 60);cvtempo
 
 
 
 
 # xgb ---------------------------------------------------------------------
-xg
+library(xgboost)
+xgb
 xgb <- xgboost(data = data.matrix(train[,-1]), 
-               label = x, 
+               label = train$x, 
                eta = 0.1,
                max_depth = 15, 
                nround=25, 
