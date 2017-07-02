@@ -16,7 +16,7 @@ create_empty_table <- function(num_rows, num_cols) {
 
 # creating empty df -------------------------------------------------------
 mat <- matrix(, nrow = 150, ncol = 5128)
-
+suppressPackageStartupMessages( require(signal, quietly = TRUE) )
 
 for (file in 1:length(temp)) {
   x = read.AsspDataObj(temp[file])
@@ -32,7 +32,8 @@ for (file in 1:length(temp)) {
   noverlap <- winsize - hopsize
   #go
   #print(yDown@left[1:3])
-  sp <-  specgram(x=yDown@left[1:330000],n=nfft,Fs=fs, window = winsize,overlap = noverlap)
+  
+  sp <-specgram(x=yDown@left[1:330000],n=nfft,Fs=fs, window = winsize,overlap = noverlap)
   #print(sp$S[1,1])
   #take a look
   # print(dim(sp$S))
@@ -81,7 +82,7 @@ for (file in 1:length(temp)) {
 # 
 # # Feature extraction ------------------------------------------------------
 # 
-# suppressPackageStartupMessages( require(signal, quietly = TRUE) )
+#suppressPackageStartupMessages( require(signal, quietly = TRUE) )
 # 
 # # setup of short time fourier transform -----------------------------------
 # fs = f1.dwn@samp.rate
@@ -139,7 +140,7 @@ write.csv(data, file = "database.csv")
 dim(data) 
 
 #Sample Indexes
-indexes = sample(1:nrow(data), size=0.2*nrow(data))
+indexes = sample(1:nrow(data), size=0.5*nrow(data))
 
 # Split data
 test = data[indexes,]
@@ -155,22 +156,93 @@ dim(train) # 26 11
 
 
 library(e1071)
-svm_model <- svm(x~ ., data=trainset, method=”C-classification”, kernel=”linear”)
+svm_model <- svm(x~ ., data=train, method='C-classification', kernel='linear')
 svm_model
 #training set predictions
-pred_train <-predict(svm_model,trainset)
-mean(pred_train==trainset$Species)
+pred_train <-predict(svm_model,train)
+mean(pred_train==train$x)
 #test set predictions
-pred_test <-predict(svm_model,testset)
-mean(pred_test==testset$Species)
+pred_test <-predict(svm_model,test)
+mean(pred_test==test$x)
 
 
 
 # model svm CARET ---------------------------------------------------------
 
 library(caret)
-ctrl <- trainControl(method = "repeatedcv", repeats = 5)
-set.seed(1500)
-mod <- train(x.~., data=data, method = "svmLinear", trControl = ctrl)
+ctrl <- trainControl(method = "repeatedcv", repeats = 10)
+mod <- train(x~., data=train, method = "svmLinear", trControl = ctrl)
+pred_train <-predict(mod,train)
+mean(pred_train==train$x)
+pred_test <-predict(mod,test[,-1])
+mean(pred_test==test$x)
 
 
+# model RANDOM FOREST -----------------------------------------------------
+library(ranger)
+modRF <-  ranger(x~.,data=train,num.trees = 500,importance = 'permutation')
+modRF
+p16<-predict(modRF,data=test)
+preds=p16$predictions
+variabiliImp=order(importance(modRF))[1:50]
+
+mean(preds==test$x)
+
+
+
+# train ridotto -----------------------------------------------------------
+
+trainReduced= train[,c(1,variabiliImp)]
+modRfReduced <-  ranger(x~.,data=trainReduced,num.trees = 200)
+modRfReduced
+p16<-predict(modRfReduced,data=test)
+preds=p16$predictions
+mean(preds==test$x)
+
+
+# XGBOOOOOST --------------------------------------------------------------
+#::install_github("Laurae2/Laurae")
+library(Laurae)
+dtrain <-
+  xgb.DMatrix(data = Laurae::DT2mat(X[1:39943,]), label = y)
+dtest <-
+  xgb.DMatrix(data = Laurae::DT2mat(X[-c(1:39943),]), label = yv)
+
+set.seed(11111)
+cv <-
+  xgb.cv(
+    params = list(
+      nthread = 4,
+      # More threads if you feel so
+      eta = 0.10,
+      max_depth = 6,
+      booster = "gbtree",colsample_bytree=0.6
+    ),
+    objective = "binary:logistic",
+    eval_metric = "error",
+    nrounds = 10000,
+    early_stopping_rounds = 50,
+    data = dtrain,
+    nfold = 3,
+    verbose = 1
+  )
+)[3] / 60);cvtempo
+
+
+
+
+# xgb ---------------------------------------------------------------------
+xg
+xgb <- xgboost(data = data.matrix(train[,-1]), 
+               label = x, 
+               eta = 0.1,
+               max_depth = 15, 
+               nround=25, 
+               subsample = 0.5,
+               colsample_bytree = 0.5,
+               seed = 1,
+               eval_metric = "merror",
+               objective = "multi:softmax",
+               num_class = 12,
+               nthread = 3
+)
