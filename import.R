@@ -153,8 +153,6 @@ dim(train) # 26 11
 
 # MODEL SVM ---------------------------------------------------------------
 
-
-
 library(e1071)
 svm_model <- svm(x~ ., data=train, method='C-classification', kernel='linear')
 svm_model
